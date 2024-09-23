@@ -1,1 +1,1 @@
-#Obsidian Markdown to LaTeX with pandoc
+# Obsidian Markdown to LaTeX with pandoc
