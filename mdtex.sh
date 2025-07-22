@@ -31,8 +31,18 @@ fi
 # Extract the file name from the file path without the extension
 file_name=$(basename "$file_path" .md)
 
-# Run the pandoc command
-pandoc "$file_path" --lua-filter=final_filter.lua --from=markdown+lists_without_preceding_blankline \
-  --metadata=lang:he --metadata=dir:rtl -o "${file_name}.tex"
+# Step 1: Sanitize the markdown for Pandoc
+python3 sanitize_markdown.py "$file_path"
+
+# Step 2: Convert to LaTeX
+pandoc "$file_path" \
+  --lua-filter=final_filter.lua \
+  --from=markdown+lists_without_preceding_blankline \
+  --metadata=lang:he \
+  --metadata=dir:rtl \
+  -o "${file_name}.tex"
+
+# Step 3: Restore the math blocks for Obsidian readability
+python3 restore_math_blocks.py "$file_path"
 
 echo "Conversion complete: ${file_name}.tex created"
