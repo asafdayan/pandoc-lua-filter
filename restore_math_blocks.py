@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
+import base64
 import sys
 import re
 import os
+
 
 def restore_math_blocks(input_text):
     # Wrap align-like environments in $$ again
@@ -16,7 +18,22 @@ def restore_math_blocks(input_text):
         input_text,
         flags=re.DOTALL
     )
-    return result
+    return re.sub(
+        r'!\[[^\]]*\]\([^)]+\)\{[^{}]*data-tldraw-embed="([^\"]+)"[^{}]*\}',
+        restore_tldraw_embed,
+        result
+    )
+
+
+def restore_tldraw_embed(match):
+    encoded = match.group(1)
+    padding = "=" * (-len(encoded) % 4)
+    try:
+        original = base64.urlsafe_b64decode((encoded + padding).encode("ascii")).decode("utf-8")
+    except Exception:
+        return match.group(0)
+    return f"![[{original}]]"
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -36,4 +53,4 @@ if __name__ == "__main__":
     with open(file_path, 'w', encoding='utf-8') as f:
         f.write(restored)
 
-    print(f"{file_path} math blocks restored with $$")
+    print(f"{file_path} math blocks restored with $$ and tldraw embeds reverted.")
