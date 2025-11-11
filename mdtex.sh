@@ -34,7 +34,10 @@ file_name=$(basename "$file_path" .md)
 # Step 1: Sanitize the markdown for Pandoc
 python3 sanitize_markdown.py "$file_path"
 
-# Step 2: Convert to LaTeX
+# Step 2: Export tldraw drawings (if any) and rewrite embeds
+python3 export_tldraw.py "$file_path"
+
+# Step 3: Convert to LaTeX
 pandoc "$file_path" \
   --lua-filter=final_filter.lua \
   --from=markdown+lists_without_preceding_blankline \
@@ -42,7 +45,7 @@ pandoc "$file_path" \
   --metadata=dir:rtl \
   -o "${file_name}.tex"
 
-# Step 3: Restore the math blocks for Obsidian readability
+# Step 4: Restore the math blocks for Obsidian readability
 python3 restore_math_blocks.py "$file_path"
 
 echo "Conversion complete: ${file_name}.tex created"
